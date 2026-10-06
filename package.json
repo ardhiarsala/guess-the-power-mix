@@ -1,0 +1,9 @@
+{
+  "name": "power-mixdle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test js/game.test.js",
+    "build:data": "node scripts/build-data.mjs"
+  }
+}

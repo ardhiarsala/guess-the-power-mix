@@ -1,0 +1,9 @@
+# Build-data cache (downloaded Ember CSV, ~49MB)
+.cache/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
