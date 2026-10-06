@@ -7,21 +7,59 @@
   <title>Power Mixdle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="bg-glow" aria-hidden="true"></div>
+  <!--
+    DIRECTION CONTRACT — GRID PRINT (seed: brief-pinned "futuristic, vector shapes, squares")
+    THESIS: a country's power mix is drawn as a 10×10 waffle of squares — 1 square = 1% of
+    generation; the square is the data encoding, not decoration. Refuses the rounded-glass
+    card stack and the dark-plus-neon-glow cluster.
+    OWN-WORLD: deep blueprint-ink ground, paper-white hairline linework, safety-yellow signal
+    color, flat saturated fuel fills, zero border-radius, corner registration ticks,
+    Chakra Petch display, mono numerals for measurement.
+    STORY: the visitor reads electricity as a mosaic, guesses, and leaves knowing one grid.
+    FIRST VIEWPORT: console-strip header with square-grid mark; schematic grid field behind;
+    square search console; each guess lands as a waffle that fills cell by cell.
+    FORM: control-room schematic / technical drawing; brief-pinned, no roll.
+    FINISH: unreviewed and undocumented is unfinished; this build ends with the finish
+    review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+  -->
+  <div class="bg-schematic" aria-hidden="true">
+    <span class="bg-square bg-square-a"></span>
+    <span class="bg-square bg-square-b"></span>
+    <span class="bg-square bg-square-c"></span>
+  </div>
 
   <header class="site-header">
     <div class="header-inner">
-      <h1 class="logo">⚡ Power <span class="logo-accent">Mixdle</span></h1>
+      <h1 class="logo">
+        <svg class="logo-mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <rect x="1" y="1" width="6" height="6" fill="currentColor" />
+          <rect x="9" y="1" width="6" height="6" fill="currentColor" opacity="0.55" />
+          <rect x="17" y="1" width="6" height="6" fill="currentColor" opacity="0.3" />
+          <rect x="1" y="9" width="6" height="6" fill="currentColor" opacity="0.55" />
+          <rect x="9" y="9" width="6" height="6" fill="var(--signal)" />
+          <rect x="17" y="9" width="6" height="6" fill="currentColor" opacity="0.3" />
+          <rect x="1" y="17" width="6" height="6" fill="currentColor" opacity="0.3" />
+          <rect x="9" y="17" width="6" height="6" fill="currentColor" opacity="0.55" />
+          <rect x="17" y="17" width="6" height="6" fill="currentColor" />
+        </svg>
+        Power&nbsp;<span class="logo-accent">Mixdle</span>
+      </h1>
       <div class="header-actions">
         <div class="mode-switch" role="group" aria-label="Game mode">
           <button id="mode-daily" class="mode-btn active" type="button">Daily</button>
           <button id="mode-free" class="mode-btn" type="button">Free play</button>
         </div>
-        <button id="stats-btn" class="icon-btn" type="button" aria-label="Statistics" title="Statistics">📊</button>
+        <button id="stats-btn" class="icon-btn" type="button" aria-label="Statistics" title="Statistics">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+            <rect x="3" y="14" width="5" height="7" fill="currentColor" />
+            <rect x="10" y="8" width="5" height="13" fill="currentColor" />
+            <rect x="17" y="3" width="5" height="18" fill="currentColor" />
+          </svg>
+        </button>
       </div>
     </div>
     <p class="tagline">Guess the mystery country from its electricity mix. 6 guesses.</p>
@@ -29,8 +67,12 @@
 
   <main class="game" id="game">
     <section id="error-state" class="error-state hidden" role="alert">
-      <div class="glass-card error-card">
-        <p class="error-emoji">🔌</p>
+      <div class="frame error-card">
+        <svg class="error-mark" viewBox="0 0 24 24" width="40" height="40" aria-hidden="true">
+          <rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" />
+          <rect x="10.5" y="6" width="3" height="8" fill="currentColor" />
+          <rect x="10.5" y="16" width="3" height="3" fill="currentColor" />
+        </svg>
         <h2>Couldn't load the grid</h2>
         <p id="error-message">The country data failed to load. Check your connection and try again.</p>
         <button id="retry-btn" class="primary-btn" type="button">Retry</button>
@@ -38,7 +80,7 @@
     </section>
 
     <section id="play-area" class="play-area hidden">
-      <div class="glass-card search-card">
+      <div class="frame search-card">
         <div class="search-row">
           <input
             id="guess-input"
@@ -67,15 +109,31 @@
       <section id="reveal" class="reveal hidden" aria-live="polite"></section>
 
       <div class="action-row">
-        <button id="share-btn" class="primary-btn hidden" type="button">📋 Share result</button>
-        <button id="new-game-btn" class="ghost-btn hidden" type="button">🎲 New free-play game</button>
+        <button id="share-btn" class="primary-btn hidden" type="button">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <rect x="3" y="9" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" />
+            <rect x="9" y="3" width="12" height="12" fill="currentColor" />
+          </svg>
+          Share result
+        </button>
+        <button id="new-game-btn" class="ghost-btn hidden" type="button">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+            <rect x="3" y="3" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" />
+            <rect x="9" y="9" width="12" height="12" fill="currentColor" />
+          </svg>
+          New free-play game
+        </button>
       </div>
     </section>
   </main>
 
   <div id="stats-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="stats-title">
-    <div class="glass-card modal-card">
-      <button id="stats-close" class="modal-close" type="button" aria-label="Close statistics">✕</button>
+    <div class="frame modal-card">
+      <button id="stats-close" class="modal-close" type="button" aria-label="Close statistics">
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+          <path d="M5 5 L19 19 M19 5 L5 19" stroke="currentColor" stroke-width="2.5" />
+        </svg>
+      </button>
       <h2 id="stats-title">Your stats</h2>
       <div class="stats-grid">
         <div class="stat"><span class="stat-value" id="stat-played">0</span><span class="stat-label">Played</span></div>
@@ -92,7 +150,7 @@
   <canvas id="confetti" class="confetti" aria-hidden="true"></canvas>
 
   <footer class="site-footer">
-    <div class="glass-card footer-card">
+    <div class="frame footer-card">
       <h2>Know your fuels</h2>
       <dl class="fuel-facts" id="fuel-facts"></dl>
       <h2>About the data</h2>

@@ -346,35 +346,61 @@ function mixSegments(country) {
   })).filter((s) => s.value > 0.05);
 }
 
+// Allocate 100 waffle cells across fuels by largest remainder.
+function waffleColors(country) {
+  const segs = mixSegments(country);
+  const total = segs.reduce((sum, s) => sum + s.value, 0);
+  if (total <= 0) return [];
+  const exact = segs.map((s) => (s.value / total) * 100);
+  const counts = exact.map((v) => Math.floor(v));
+  let remaining = 100 - counts.reduce((a, b) => a + b, 0);
+  const order = exact
+    .map((v, i) => ({ i, rem: v - Math.floor(v) }))
+    .sort((a, b) => b.rem - a.rem);
+  for (let k = 0; remaining > 0 && order.length > 0; k = (k + 1) % order.length) {
+    counts[order[k].i] += 1;
+    remaining -= 1;
+  }
+  const colors = [];
+  segs.forEach((s, i) => {
+    for (let j = 0; j < counts[i]; j++) colors.push(s.color);
+  });
+  return colors;
+}
+
 function buildMixBar(country, animate) {
-  const bar = document.createElement('div');
-  bar.className = 'mix-bar';
-  bar.setAttribute('role', 'img');
-  bar.setAttribute(
+  // GRID PRINT: the mix renders as a 10×10 waffle of squares; 1 square = 1%.
+  const waffle = document.createElement('div');
+  waffle.className = 'waffle';
+  waffle.setAttribute('role', 'img');
+  waffle.setAttribute(
     'aria-label',
     `${country.name} electricity mix: ${mixSegments(country)
       .map((s) => `${s.label} ${s.value.toFixed(1)}%`)
       .join(', ')}`
   );
-  const segs = [];
-  for (const s of mixSegments(country)) {
-    const seg = document.createElement('div');
-    seg.className = 'mix-seg';
-    seg.style.background = s.color;
-    seg.title = `${s.label}: ${s.value.toFixed(1)}%`;
-    bar.appendChild(seg);
-    segs.push({ seg, value: s.value });
+  const colors = waffleColors(country);
+  const cells = [];
+  for (let i = 0; i < 100; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'waffle-cell';
+    if (colors[i]) cell.style.background = colors[i];
+    waffle.appendChild(cell);
+    cells.push(cell);
   }
   if (animate && !reducedMotion) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        for (const { seg, value } of segs) seg.style.width = `${value}%`;
+        cells.forEach((cell, i) => {
+          cell.style.transitionDelay = `${Math.min(i * 6, 600)}ms`;
+          cell.classList.add('on');
+        });
       });
     });
   } else {
-    for (const { seg, value } of segs) seg.style.width = `${value}%`;
+    for (const cell of cells) cell.classList.add('on');
   }
-  return bar;
+  return waffle;
 }
 
 function buildLegend(country) {
@@ -396,7 +422,7 @@ function buildLegend(country) {
 
 function renderGuess(guess, result) {
   const card = document.createElement('article');
-  card.className = 'glass-card guess-card';
+  card.className = 'frame guess-card';
 
   const head = document.createElement('div');
   head.className = 'guess-head';
@@ -444,9 +470,9 @@ function renderHints(guessCount) {
   if (!hint) return;
   els.hintRow.innerHTML = '';
   const chips = [];
-  if (hint.region) chips.push(`🌍 Region: ${hint.region}`);
-  if (hint.cleanShareBand) chips.push(`🌱 Clean share: ${hint.cleanShareBand}`);
-  if (hint.demandBand) chips.push(`🏙️ Demand: ${hint.demandBand}`);
+  if (hint.region) chips.push(`Region — ${hint.region}`);
+  if (hint.cleanShareBand) chips.push(`Clean share — ${hint.cleanShareBand}`);
+  if (hint.demandBand) chips.push(`Demand — ${hint.demandBand}`);
   for (const text of chips) {
     const chip = document.createElement('span');
     chip.className = 'hint-chip';
@@ -507,12 +533,12 @@ function renderReveal() {
   const basics = GRID_BASICS[stats.played % GRID_BASICS.length];
 
   const card = document.createElement('section');
-  card.className = `glass-card reveal-card ${won ? 'win' : 'lose'}`;
+  card.className = `frame reveal-card ${won ? 'win' : 'lose'}`;
 
   const title = document.createElement('h2');
   title.textContent = won
-    ? `🎉 You got it in ${results.length} ${results.length === 1 ? 'guess' : 'guesses'}!`
-    : '⚡ Out of guesses!';
+    ? `Solved in ${results.length} ${results.length === 1 ? 'guess' : 'guesses'}`
+    : 'Out of guesses';
   const sub = document.createElement('p');
   sub.className = 'reveal-sub';
   sub.textContent = `The mystery country was ${target.name}.`;
@@ -525,7 +551,7 @@ function renderReveal() {
   factsTitle.textContent = 'Why this mix?';
   factsTitle.style.margin = '1rem 0 0.4rem';
   factsTitle.style.fontSize = '0.95rem';
-  factsTitle.style.color = 'var(--text-dim)';
+  factsTitle.style.color = 'var(--paper-dim)';
   card.appendChild(factsTitle);
 
   const list = document.createElement('ul');
@@ -587,7 +613,7 @@ function launchConfetti() {
   canvas.height = window.innerHeight * dpr;
   ctx.scale(dpr, dpr);
 
-  const colors = FUELS.map((f) => f.color).concat(['#ffffff', '#26c6da', '#f7b731']);
+  const colors = FUELS.map((f) => f.color).concat(['#e9f2fa', '#ffd23f']);
   const particles = [];
   const count = 140;
   for (let i = 0; i < count; i++) {
@@ -619,7 +645,7 @@ function launchConfetti() {
       ctx.rotate(p.rot);
       ctx.fillStyle = p.color;
       ctx.globalAlpha = Math.max(0, 1 - frame / maxFrames);
-      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
       ctx.restore();
     }
     if (frame < maxFrames) {
