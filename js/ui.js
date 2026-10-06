@@ -36,7 +36,29 @@ const GRID_BASICS = [
   { title: 'Hydropower is a battery', text: 'Reservoirs store energy as water. Some grids even pump water uphill at night to release it at peak times.' },
 ];
 
-const TIER_ARROW = { up: '↑', down: '↓', same: '' };
+const TIER_ARROW = { up: '↑', down: '↓', same: '=' };
+
+// Light fuel fills need ink text; dark fills need paper text.
+function isLightColor(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.5;
+}
+
+// 3-letter fuel codes for the tier tiles (FUELS order).
+const FUEL_SHORT = {
+  coal: 'COA',
+  gas: 'GAS',
+  nuclear: 'NUC',
+  hydro: 'HYD',
+  wind: 'WIN',
+  solar: 'SOL',
+  bioenergy: 'BIO',
+  otherFossil: 'OFO',
+  otherRenewables: 'ORE',
+};
 
 const $ = (id) => document.getElementById(id);
 
@@ -446,8 +468,16 @@ function renderGuess(guess, result) {
     const info = result.perFuel[f.key];
     const cell = document.createElement('div');
     cell.className = `tier-cell ${info.tier}`;
+    if (info.tier === 'exact' && isLightColor(f.color)) cell.classList.add('ink-text');
+    cell.style.setProperty('--fuel', f.color);
     cell.style.animationDelay = reducedMotion ? '0s' : `${i * 60}ms`;
-    cell.textContent = TIER_ARROW[info.dir];
+    const arrow = document.createElement('span');
+    arrow.className = 'tier-arrow';
+    arrow.textContent = TIER_ARROW[info.dir];
+    const code = document.createElement('span');
+    code.className = 'tier-code';
+    code.textContent = FUEL_SHORT[f.key] || f.key.slice(0, 3).toUpperCase();
+    cell.append(arrow, code);
     const diffAbs = Math.abs(info.diff).toFixed(1);
     const dirText =
       info.dir === 'same'
@@ -455,7 +485,7 @@ function renderGuess(guess, result) {
         : info.dir === 'up'
           ? `target has ${diffAbs} pts more`
           : `target has ${diffAbs} pts less`;
-    cell.title = `${f.label}: ${dirText} (${info.tier})`;
+    cell.title = `${f.label}: ${dirText} (${info.tier === 'exact' ? 'within 3 pts' : info.tier === 'close' ? 'within 10 pts' : 'more than 10 pts off'})`;
     cell.setAttribute('aria-label', `${f.label}: ${info.tier}, ${dirText}`);
     tierRow.appendChild(cell);
   });
